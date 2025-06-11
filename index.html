@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SOAD Gemini Chat</title>
+  <style>
+    body {
+      background: #0d0d0d;
+      color: #00ff99;
+      font-family: monospace;
+      padding: 20px;
+    }
+    input, textarea, button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      background: #1a1a1a;
+      color: #00ff99;
+      border: 1px solid #00ff99;
+      border-radius: 5px;
+    }
+    button {
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .result {
+      margin-top: 20px;
+      background: #111;
+      padding: 15px;
+      border: 1px solid #00ff99;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>💻 SOAD Gemini Chat</h1>
+  <textarea id="textInput" rows="4" placeholder="Enter your message..."></textarea>
+  <input id="imageInput" type="text" placeholder="Optional image URL (leave blank if none)" />
+  <button onclick="sendToGemini()">🚀 Send to Gemini</button>
+  <div id="output" class="result">Result will appear here...</div>
+
+  <script>
+    async function sendToGemini() {
+      const text = document.getElementById('textInput').value;
+      const imageUrl = document.getElementById('imageInput').value;
+
+      const res = await fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, imageUrl })
+      });
+
+      const data = await res.json();
+      document.getElementById('output').textContent = data.result || data.error || "No response";
+    }
+  </script>
+</body>
+</html>
