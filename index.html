@@ -1,10 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
+<!-- index.html --><!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Soad Gemini Bot + Song + Image</title>
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soad Gemini & Song Bot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
@@ -15,137 +14,97 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-      padding-top: 50px;
-    }
+      justify-content: center;
+      height: 100vh;
+    }h1 {
+  margin-bottom: 20px;
+}
 
-    h1 {
-      margin-bottom: 20px;
-      font-size: 2rem;
-    }
+input, select {
+  background: #1a1a1a;
+  color: #33ff33;
+  border: 1px solid #33ff33;
+  padding: 10px;
+  width: 80%;
+  max-width: 500px;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
 
-    input, select {
-      background: #1a1a1a;
-      color: #33ff33;
-      border: 1px solid #33ff33;
-      padding: 10px;
-      width: 80%;
-      max-width: 500px;
-      margin-bottom: 10px;
-      font-size: 1rem;
-    }
+button {
+  background: #33ff33;
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+}
 
-    button {
-      background: #33ff33;
-      color: #000;
-      border: none;
-      padding: 10px 20px;
-      font-weight: bold;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
+button:hover {
+  background: #00cc00;
+}
 
-    button:hover {
-      background: #00cc00;
-    }
+pre {
+  background: #1a1a1a;
+  padding: 20px;
+  margin-top: 20px;
+  width: 80%;
+  max-width: 600px;
+  border: 1px solid #33ff33;
+  overflow-x: auto;
+}
 
-    pre {
-      background: #1a1a1a;
-      color: #33ff33;
-      padding: 20px;
-      margin-top: 20px;
-      width: 80%;
-      max-width: 600px;
-      overflow-x: auto;
-      border: 1px solid #33ff33;
-    }
   </style>
 </head>
 <body>
-  <h1>💻 Soad Gemini Bot + 🎵 Song Search + 🖼️ Image</h1>
-
+  <h1>💻 Soad Gemini + 🎵 Song Bot</h1>
   <select id="mode">
     <option value="gemini">Gemini</option>
     <option value="song">Song</option>
-    <option value="image">Image</option>
   </select>
-
-  <input id="prompt" placeholder="Type your question, song name or description..." />
-  <input type="file" id="imageFile" accept="image/*" style="display: none;" />
+  <input id="prompt" placeholder="Enter your question or song name" />
   <button onclick="send()">Send</button>
-
-  <pre id="response">Waiting for input...</pre>
-
-  <script>
+  <pre id="response">Waiting...</pre>  <script>
     async function send() {
-      const mode = document.getElementById('mode').value;
       const prompt = document.getElementById('prompt').value;
-      const imageFileInput = document.getElementById('imageFile');
+      const mode = document.getElementById('mode').value;
       const responseBox = document.getElementById('response');
       responseBox.textContent = "Loading...";
 
-      if (mode === 'image') {
-        if (!imageFileInput.files[0]) {
-          alert("Please select an image file.");
-          return;
-        }
+      let endpoint = "";
+      let options = {};
 
-        const reader = new FileReader();
-        reader.onload = async function () {
-          const base64Image = reader.result;
-
-          try {
-            const res = await fetch("https://soad-bot.vercel.app/api/image", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ prompt, imageBase64: base64Image })
-            });
-            const data = await res.json();
-            responseBox.textContent = data.result || data.error || "No response";
-          } catch (err) {
-            responseBox.textContent = "Error: " + err.message;
-          }
+      if (mode === "gemini") {
+        endpoint = "/api/gemini";
+        options = {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt })
         };
-        reader.readAsDataURL(imageFileInput.files[0]);
       } else {
-        let endpoint = "";
-        let payload = {};
+        endpoint = `/api/song?q=${encodeURIComponent(prompt)}`;
+        options = { method: "GET" };
+      }
 
-        if (mode === 'gemini') {
-          endpoint = 'https://soad-bot.vercel.app/api/gemini';
-          payload = { prompt };
-        } else if (mode === 'song') {
-          endpoint = 'https://api.popcat.xyz/songsearch?q=' + encodeURIComponent(prompt);
-        }
+      try {
+        const res = await fetch(endpoint, options);
+        const data = await res.json();
 
-        try {
-          const res = await fetch(endpoint, {
-            method: mode === 'gemini' ? 'POST' : 'GET',
-            headers: mode === 'gemini' ? { 'Content-Type': 'application/json' } : {},
-            body: mode === 'gemini' ? JSON.stringify(payload) : undefined
-          });
-
-          const data = await res.json();
-
-          if (mode === 'gemini') {
-            responseBox.textContent = data.result || data.error;
+        if (mode === "gemini") {
+          responseBox.textContent = data.result || data.error;
+        } else {
+          if (!data.result || data.result.length === 0) {
+            responseBox.textContent = "No songs found.";
           } else {
             const song = data.result[0];
-            responseBox.textContent = `🎵 Title: ${song.title}\n🎤 Artist: ${song.artist}\n▶️ Link: ${song.url}`;
+            responseBox.textContent =
+              `🎵 Title: ${song.title}\n🎤 Artist: ${song.artist}\n▶️ Link: ${song.url}`;
           }
-        } catch (err) {
-          responseBox.textContent = "Error: " + err.message;
         }
+      } catch (err) {
+        responseBox.textContent = "Error: " + err.message;
       }
     }
-
-    // Show file input only in image mode
-    document.getElementById("mode").addEventListener("change", function () {
-      const isImage = this.value === "image";
-      document.getElementById("imageFile").style.display = isImage ? "block" : "none";
-    });
-  </script>
-</body>
+  </script></body>
 </html>
