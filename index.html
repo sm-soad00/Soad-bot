@@ -1,57 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>SOAD Gemini Chat</title>
-  <style>
-    body {
-      background: #0d0d0d;
-      color: #00ff99;
-      font-family: monospace;
-      padding: 20px;
-    }
-    input, textarea, button {
-      width: 100%;
-      margin-top: 10px;
-      padding: 10px;
-      background: #1a1a1a;
-      color: #00ff99;
-      border: 1px solid #00ff99;
-      border-radius: 5px;
-    }
-    button {
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .result {
-      margin-top: 20px;
-      background: #111;
-      padding: 15px;
-      border: 1px solid #00ff99;
-      border-radius: 5px;
-    }
-  </style>
+  <title>Soad Gemini Bot</title>
 </head>
 <body>
-  <h1>💻 SOAD Gemini Chat</h1>
-  <textarea id="textInput" rows="4" placeholder="Enter your message..."></textarea>
-  <input id="imageInput" type="text" placeholder="Optional image URL (leave blank if none)" />
-  <button onclick="sendToGemini()">🚀 Send to Gemini</button>
-  <div id="output" class="result">Result will appear here...</div>
+  <h1>Soad Gemini Bot</h1>
+  <input id="prompt" placeholder="Enter your question..." />
+  <button onclick="send()">Ask</button>
+  <pre id="response"></pre>
 
   <script>
-    async function sendToGemini() {
-      const text = document.getElementById('textInput').value;
-      const imageUrl = document.getElementById('imageInput').value;
-
-      const res = await fetch('/chat', {
+    async function send() {
+      const prompt = document.getElementById('prompt').value;
+      const res = await fetch('/api/gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, imageUrl })
+        body: JSON.stringify({ prompt })
       });
-
       const data = await res.json();
-      document.getElementById('output').textContent = data.result || data.error || "No response";
+      document.getElementById('response').textContent = data.result || data.error;
     }
   </script>
 </body>
