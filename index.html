@@ -1,13 +1,13 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Soad Gemini Bot</title>
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Soad Gemini Bot + Song + Image Upload</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <style>
     body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       font-family: 'Share Tech Mono', monospace;
       background-color: #0d0d0d;
       color: #33ff33;
@@ -16,65 +16,169 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
-    }h1 {
-  margin-bottom: 20px;
-  font-size: 2rem;
-}
-
-input {
-  background: #1a1a1a;
-  color: #33ff33;
-  border: 1px solid #33ff33;
-  padding: 10px;
-  width: 80%;
-  max-width: 500px;
-  margin-bottom: 10px;
-  font-size: 1rem;
-}
-
-button {
-  background: #33ff33;
-  color: #000;
-  border: none;
-  padding: 10px 20px;
-  font-weight: bold;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-button:hover {
-  background: #00cc00;
-}
-
-pre {
-  background: #1a1a1a;
-  color: #33ff33;
-  padding: 20px;
-  margin-top: 20px;
-  width: 80%;
-  max-width: 600px;
-  overflow-x: auto;
-  border: 1px solid #33ff33;
-}
-
+      gap: 10px;
+    }
+    h1 {
+      margin-bottom: 20px;
+      font-size: 2rem;
+    }
+    select, input, button {
+      background: #1a1a1a;
+      color: #33ff33;
+      border: 1px solid #33ff33;
+      padding: 10px;
+      width: 80%;
+      max-width: 500px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    button {
+      background: #33ff33;
+      color: #000;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #00cc00;
+    }
+    pre {
+      background: #1a1a1a;
+      color: #33ff33;
+      padding: 20px;
+      width: 80%;
+      max-width: 600px;
+      overflow-x: auto;
+      border: 1px solid #33ff33;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      min-height: 100px;
+    }
+    #image-section {
+      width: 80%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
-  <h1>💻 Soad Gemini Bot</h1>
-  <input id="prompt" placeholder="Type your question here..." />
+  <h1>💻 Soad Gemini Bot + 🎵 Song + 🖼️ Image Upload</h1>
+
+  <select id="mode">
+    <option value="gemini">Gemini</option>
+    <option value="song">Song</option>
+    <option value="image">Image + Gemini Q&A</option>
+  </select>
+
+  <!-- For Gemini and Song modes -->
+  <input id="prompt" placeholder="Type your question or song name here..." />
+
+  <!-- For Image mode -->
+  <div id="image-section" style="display:none;">
+    <input type="file" id="imageFile" accept="image/*" />
+    <input id="imagePrompt" placeholder="Write your question about the image here..." />
+  </div>
+
   <button onclick="send()">Send</button>
-  <pre id="response">Waiting for input...</pre>  <script>
+
+  <pre id="response">Waiting for input...</pre>
+
+  <script>
+    const modeSelect = document.getElementById('mode');
+    const promptInput = document.getElementById('prompt');
+    const imageSection = document.getElementById('image-section');
+    const imageFileInput = document.getElementById('imageFile');
+    const imagePromptInput = document.getElementById('imagePrompt');
+    const responseBox = document.getElementById('response');
+
+    modeSelect.addEventListener('change', () => {
+      if (modeSelect.value === 'image') {
+        promptInput.style.display = 'none';
+        imageSection.style.display = 'flex';
+      } else {
+        promptInput.style.display = 'block';
+        imageSection.style.display = 'none';
+      }
+      responseBox.textContent = "Waiting for input...";
+    });
+
     async function send() {
-      const prompt = document.getElementById('prompt').value;
-      document.getElementById('response').textContent = "Loading...";
-      const res = await fetch('/api/gemini', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt })
-      });
-      const data = await res.json();
-      document.getElementById('response').textContent = data.result || data.error;
+      const mode = modeSelect.value;
+      responseBox.textContent = "Loading...";
+
+      if (mode === 'gemini') {
+        const prompt = promptInput.value.trim();
+        if (!prompt) {
+          responseBox.textContent = "Please type your question.";
+          return;
+        }
+        try {
+          const res = await fetch('https://soad-bot.vercel.app/api/gemini', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt }),
+          });
+          const data = await res.json();
+          responseBox.textContent = data.result || data.error || "No response";
+        } catch (err) {
+          responseBox.textContent = "Error: " + err.message;
+        }
+
+      } else if (mode === 'song') {
+        const prompt = promptInput.value.trim();
+        if (!prompt) {
+          responseBox.textContent = "Please type a song name.";
+          return;
+        }
+        try {
+          const res = await fetch('https://api.popcat.xyz/songsearch?q=' + encodeURIComponent(prompt));
+          const data = await res.json();
+          if (data.result && data.result.length > 0) {
+            const song = data.result[0];
+            responseBox.textContent = `🎵 Title: ${song.title}\n🎤 Artist: ${song.artist}\n▶️ Link: ${song.url}`;
+          } else {
+            responseBox.textContent = "No song found.";
+          }
+        } catch (err) {
+          responseBox.textContent = "Error: " + err.message;
+        }
+
+      } else if (mode === 'image') {
+        const file = imageFileInput.files[0];
+        const question = imagePromptInput.value.trim();
+
+        if (!file) {
+          responseBox.textContent = "Please select an image file.";
+          return;
+        }
+        if (!question) {
+          responseBox.textContent = "Please write your question about the image.";
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('prompt', question);
+
+        try {
+          const res = await fetch('https://soad-bot.vercel.app/api/image', {
+            method: 'POST',
+            body: formData,
+          });
+          const data = await res.json();
+          responseBox.textContent = data.result || data.answer || data.error || "No response";
+        } catch (err) {
+          responseBox.textContent = "Error: " + err.message;
+        }
+      }
     }
-  </script></body>
+
+    // Initialize UI
+    modeSelect.dispatchEvent(new Event('change'));
+  </script>
+</body>
 </html>
