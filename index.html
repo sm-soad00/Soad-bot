@@ -65,6 +65,7 @@
 
     .msg-content {
       max-width: 500px;
+      word-wrap: break-word;
     }
 
     #prompt {
@@ -75,6 +76,12 @@
       color: #33ff33;
       border: 1px solid #33ff33;
       font-size: 1rem;
+      margin-bottom: 10px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
       margin-bottom: 10px;
     }
 
@@ -92,17 +99,41 @@
     button:hover {
       background: #00cc00;
     }
+
+    #imageInput {
+      display: none;
+    }
+
+    .image-btn {
+      background: #333;
+      color: #33ff33;
+      border: 1px solid #33ff33;
+      padding: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .image-btn:hover {
+      background: #222;
+    }
   </style>
 </head>
 <body>
   <h1>🤖 SOAD GEMINI PRO</h1>
   <div id="chat"></div>
-  <input id="prompt" placeholder="Ask something to Gemini..." />
-  <button onclick="send()">Send</button>
+
+  <div class="controls">
+    <input id="prompt" placeholder="Ask something to Gemini..." />
+    <button onclick="send()">Send</button>
+    <label for="imageInput" class="image-btn">📷</label>
+    <input type="file" id="imageInput" accept="image/*" />
+  </div>
 
   <script>
     const chatBox = document.getElementById('chat');
     const input = document.getElementById('prompt');
+    const imageInput = document.getElementById('imageInput');
 
     async function send() {
       const question = input.value.trim();
@@ -123,7 +154,7 @@
         appendMessage("SOAD GEMINI PRO", reply, "bot-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
         chatBox.scrollTop = chatBox.scrollHeight;
       } catch (err) {
-        appendMessage("SOAD GEMINI PRO", "Error: " + err.message, "bot-msg", "SAVE_20240430_210435.jpg");
+        appendMessage("SOAD GEMINI PRO", "Error: " + err.message, "bot-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
       }
     }
 
@@ -144,6 +175,19 @@
       `;
       chatBox.appendChild(msg);
     }
+
+    imageInput.addEventListener('change', () => {
+      const file = imageInput.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const imgHTML = `<img src="${e.target.result}" style="max-width: 200px; border: 1px solid #33ff33; border-radius: 5px;" />`;
+        appendMessage("You", imgHTML, "user-msg");
+        chatBox.scrollTop = chatBox.scrollHeight;
+      };
+      reader.readAsDataURL(file);
+    });
   </script>
 </body>
 </html>
