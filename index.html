@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SOAD GEMINI PRO</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <style>
@@ -12,19 +12,21 @@
       background: url("https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/file_00000000acb061f7a2c076e30beb896c.png") no-repeat center center fixed;
       background-size: cover;
       color: #33ff33;
-      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      padding: 2rem;
+      backdrop-filter: brightness(0.8);
     }h1 {
-  text-align: center;
-  padding: 1rem;
+  margin-bottom: 1rem;
   background: rgba(0, 0, 0, 0.6);
-  margin: 0;
+  padding: 10px 20px;
+  border-radius: 10px;
 }
 
 #chat {
-  position: absolute;
-  top: 80px;
-  left: 50%;
-  transform: translateX(-50%);
   background: rgba(0, 0, 0, 0.6);
   border: 1px solid #33ff33;
   padding: 1rem;
@@ -32,60 +34,62 @@
   max-width: 600px;
   height: 60vh;
   overflow-y: auto;
+  margin-bottom: 1rem;
   border-radius: 10px;
 }
 
 .msg {
+  margin-bottom: 15px;
   display: flex;
-  align-items: center;
-  margin-bottom: 10px;
+  align-items: flex-start;
+}
+
+.msg img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: 10px;
 }
 
 .user-msg {
   justify-content: flex-end;
+  text-align: right;
+}
+
+.user-msg .msg-content {
+  background: #003300;
+  padding: 8px;
+  border-radius: 10px;
 }
 
 .bot-msg {
   justify-content: flex-start;
-}
-
-.msg-content {
-  background: rgba(26, 26, 26, 0.8);
-  padding: 8px 12px;
-  border-radius: 10px;
-  max-width: 60%;
-  color: #fff;
-}
-
-.user-msg .msg-content {
-  background: #007aff;
-  color: white;
-  border-top-right-radius: 0;
+  text-align: left;
 }
 
 .bot-msg .msg-content {
-  background: #1a1a1a;
+  background: #003366;
+  padding: 8px;
+  border-radius: 10px;
+}
+
+.msg-content {
+  max-width: 500px;
   color: #33ff33;
-  border-top-left-radius: 0;
 }
 
 #prompt {
-  position: absolute;
-  right: 10px;
-  bottom: 20px;
-  width: 70%;
-  max-width: 400px;
+  width: 90%;
+  max-width: 600px;
   padding: 10px;
   background: #1a1a1a;
   color: #33ff33;
   border: 1px solid #33ff33;
   font-size: 1rem;
+  margin-bottom: 10px;
 }
 
 button {
-  position: absolute;
-  right: 10px;
-  bottom: 70px;
   background: #33ff33;
   color: #000;
   border: none;
@@ -100,73 +104,52 @@ button:hover {
   background: #00cc00;
 }
 
-#chat-head {
-  position: fixed;
-  bottom: 30px;
-  left: 30px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: url('https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg') no-repeat center/cover;
-  cursor: move;
-  z-index: 1000;
-  border: 2px solid #33ff33;
-}
-
-#note {
-  position: fixed;
-  bottom: 100px;
-  left: 100px;
-  background: rgba(0, 0, 0, 0.8);
-  color: #33ff33;
-  padding: 15px;
-  border-radius: 10px;
-  display: none;
-  border: 1px solid #33ff33;
-  width: 220px;
-}
-
-#note h4 {
-  margin: 0 0 5px 0;
-}
-
-#thinking {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.7);
-  padding: 5px 15px;
-  border-radius: 10px;
-  border: 1px solid #33ff33;
-  display: none;
-}
-
   </style>
 </head>
 <body>
   <h1>🤖 SOAD GEMINI PRO</h1>
   <div id="chat"></div>
   <input id="prompt" placeholder="Ask something to Gemini..." />
-  <button onclick="send()">Send</button>
-  <div id="chat-head" onclick="toggleNote()"></div>
-  <div id="note">
-    <h4>🛠 DEVELOPER BY SM SOAD</h4>
-    <p>THIS IS A SIMPLE GEMINI PRO</p>
-  </div>
-  <div id="thinking">Thinking 💬</div>  <script>
+  <button onclick="send()">Send</button>  <script>
     const chatBox = document.getElementById('chat');
     const input = document.getElementById('prompt');
-    const thinking = document.getElementById('thinking');
+
+    function appendMessage(sender, text, className, avatar = null) {
+      const msg = document.createElement("div");
+      msg.className = "msg " + className;
+
+      let imgHTML = "";
+      if (avatar) {
+        imgHTML = `<img src="${avatar}" alt="${sender}">`;
+      }
+
+      msg.innerHTML = `
+        ${className === 'bot-msg' ? imgHTML : ''}
+        <div class="msg-content">
+          <strong>${sender}:</strong><br>${text}
+        </div>
+        ${className === 'user-msg' ? imgHTML : ''}
+      `;
+      chatBox.appendChild(msg);
+    }
 
     async function send() {
       const question = input.value.trim();
       if (!question) return;
 
-      appendMessage(question, "user-msg");
+      appendMessage("You", question, "user-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
       input.value = "";
+      chatBox.scrollTop = chatBox.scrollHeight;
 
-      thinking.style.display = "block";
+      // Show thinking indicator
+      const thinking = document.createElement("div");
+      thinking.className = "msg bot-msg";
+      thinking.id = "thinking-indicator";
+      thinking.innerHTML = `
+        <img src="https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg" alt="SOAD">
+        <div class="msg-content">Thinking 💬</div>
+      `;
+      chatBox.appendChild(thinking);
       chatBox.scrollTop = chatBox.scrollHeight;
 
       try {
@@ -176,55 +159,18 @@ button:hover {
           body: JSON.stringify({ prompt: question })
         });
         const data = await res.json();
+
         const reply = data.result || data.error || "No response.";
-        appendMessage(reply, "bot-msg");
-      } catch (err) {
-        appendMessage("Error: " + err.message, "bot-msg");
-      } finally {
-        thinking.style.display = "none";
+
+        // Remove thinking indicator
+        document.getElementById("thinking-indicator")?.remove();
+
+        appendMessage("SOAD GEMINI PRO", reply, "bot-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
         chatBox.scrollTop = chatBox.scrollHeight;
+      } catch (err) {
+        document.getElementById("thinking-indicator")?.remove();
+        appendMessage("SOAD GEMINI PRO", "Error: " + err.message, "bot-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
       }
     }
-
-    function appendMessage(text, className) {
-      const msg = document.createElement("div");
-      msg.className = "msg " + className;
-      msg.innerHTML = `<div class="msg-content">${text}</div>`;
-      chatBox.appendChild(msg);
-    }
-
-    function toggleNote() {
-      const note = document.getElementById('note');
-      note.style.display = note.style.display === 'none' ? 'block' : 'none';
-    }
-
-    const chatHead = document.getElementById('chat-head');
-    let isDragging = false;
-
-    chatHead.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      let offsetX = e.clientX - chatHead.offsetLeft;
-      let offsetY = e.clientY - chatHead.offsetTop;
-
-      function move(e) {
-        if (isDragging) {
-          chatHead.style.left = `${e.clientX - offsetX}px`;
-          chatHead.style.top = `${e.clientY - offsetY}px`;
-
-          const note = document.getElementById('note');
-          note.style.left = `${e.clientX - offsetX + 70}px`;
-          note.style.top = `${e.clientY - offsetY}px`;
-        }
-      }
-
-      function stop() {
-        isDragging = false;
-        document.removeEventListener('mousemove', move);
-        document.removeEventListener('mouseup', stop);
-      }
-
-      document.addEventListener('mousemove', move);
-      document.addEventListener('mouseup', stop);
-    });
   </script></body>
 </html>
