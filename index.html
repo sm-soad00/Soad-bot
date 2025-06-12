@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -14,135 +13,135 @@
       background-size: cover;
       color: #33ff33;
       overflow: hidden;
-    }
+    }h1 {
+  text-align: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.6);
+  margin: 0;
+}
 
-    h1 {
-      text-align: center;
-      padding: 1rem;
-      background: rgba(0, 0, 0, 0.6);
-      margin: 0;
-    }
+#chat {
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid #33ff33;
+  padding: 1rem;
+  width: 90%;
+  max-width: 600px;
+  height: 60vh;
+  overflow-y: auto;
+  border-radius: 10px;
+}
 
-    #chat {
-      position: absolute;
-      top: 80px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.6);
-      border: 1px solid #33ff33;
-      padding: 1rem;
-      width: 90%;
-      max-width: 600px;
-      height: 60vh;
-      overflow-y: auto;
-      border-radius: 10px;
-    }
+.msg {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
 
-    .msg {
-      display: flex;
-      margin-bottom: 10px;
-    }
+.user-msg {
+  justify-content: flex-end;
+}
 
-    .user-msg {
-      justify-content: flex-end;
-    }
+.bot-msg {
+  justify-content: flex-start;
+}
 
-    .bot-msg {
-      justify-content: flex-start;
-    }
+.msg-content {
+  background: rgba(26, 26, 26, 0.8);
+  padding: 8px 12px;
+  border-radius: 10px;
+  max-width: 60%;
+  color: #fff;
+}
 
-    .msg-content {
-      background: rgba(26, 26, 26, 0.8);
-      padding: 8px 12px;
-      border-radius: 10px;
-      max-width: 60%;
-      color: #fff;
-    }
+.user-msg .msg-content {
+  background: #007aff;
+  color: white;
+  border-top-right-radius: 0;
+}
 
-    .user-msg .msg-content {
-      background: #007aff;
-      color: white;
-      border-top-right-radius: 0;
-    }
+.bot-msg .msg-content {
+  background: #1a1a1a;
+  color: #33ff33;
+  border-top-left-radius: 0;
+}
 
-    .bot-msg .msg-content {
-      background: #1a1a1a;
-      color: #33ff33;
-      border-top-left-radius: 0;
-    }
+#prompt {
+  position: absolute;
+  right: 10px;
+  bottom: 20px;
+  width: 70%;
+  max-width: 400px;
+  padding: 10px;
+  background: #1a1a1a;
+  color: #33ff33;
+  border: 1px solid #33ff33;
+  font-size: 1rem;
+}
 
-    #prompt {
-      position: absolute;
-      right: 10px;
-      bottom: 20px;
-      width: 70%;
-      max-width: 400px;
-      padding: 10px;
-      background: #1a1a1a;
-      color: #33ff33;
-      border: 1px solid #33ff33;
-      font-size: 1rem;
-    }
+button {
+  position: absolute;
+  right: 10px;
+  bottom: 70px;
+  background: #33ff33;
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 5px;
+}
 
-    button {
-      position: absolute;
-      right: 10px;
-      bottom: 70px;
-      background: #33ff33;
-      color: #000;
-      border: none;
-      padding: 10px 20px;
-      font-weight: bold;
-      font-size: 1rem;
-      cursor: pointer;
-      border-radius: 5px;
-    }
+button:hover {
+  background: #00cc00;
+}
 
-    button:hover {
-      background: #00cc00;
-    }
+#chat-head {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: url('https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg') no-repeat center/cover;
+  cursor: move;
+  z-index: 1000;
+  border: 2px solid #33ff33;
+}
 
-    #chat-head {
-      position: fixed;
-      bottom: 30px;
-      left: 30px;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: url('https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg') no-repeat center/cover;
-      cursor: move;
-      z-index: 1000;
-    }
+#note {
+  position: fixed;
+  bottom: 100px;
+  left: 100px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #33ff33;
+  padding: 15px;
+  border-radius: 10px;
+  display: none;
+  border: 1px solid #33ff33;
+  width: 220px;
+}
 
-    #note {
-      position: fixed;
-      bottom: 100px;
-      left: 100px;
-      background: rgba(0, 0, 0, 0.8);
-      color: #33ff33;
-      padding: 15px;
-      border-radius: 10px;
-      display: none;
-      border: 1px solid #33ff33;
-      width: 220px;
-    }
+#note h4 {
+  margin: 0 0 5px 0;
+}
 
-    #note h4 {
-      margin-top: 0;
-      margin-bottom: 5px;
-    }
+#thinking {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  padding: 5px 15px;
+  border-radius: 10px;
+  border: 1px solid #33ff33;
+  display: none;
+}
 
-    #thinking {
-      position: absolute;
-      top: 50px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.7);
-      padding: 5px 15px;
-      border-radius: 10px;
-      border: 1px solid #33ff33;
-      display: none;
-    }
   </style>
 </head>
 <body>
@@ -155,9 +154,7 @@
     <h4>🛠 DEVELOPER BY SM SOAD</h4>
     <p>THIS IS A SIMPLE GEMINI PRO</p>
   </div>
-  <div id="thinking">Thinking 💬</div>
-
-  <script>
+  <div id="thinking">Thinking 💬</div>  <script>
     const chatBox = document.getElementById('chat');
     const input = document.getElementById('prompt');
     const thinking = document.getElementById('thinking');
@@ -229,6 +226,5 @@
       document.addEventListener('mousemove', move);
       document.addEventListener('mouseup', stop);
     });
-  </script>
-</body>
+  </script></body>
 </html>
