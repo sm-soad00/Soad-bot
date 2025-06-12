@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,10 +46,9 @@
       margin-bottom: 15px;
       display: flex;
       align-items: flex-start;
-      cursor: pointer;
     }
 
-    .msg img.avatar {
+    .msg img {
       width: 32px;
       height: 32px;
       border-radius: 50%;
@@ -65,19 +65,6 @@
 
     .msg-content {
       max-width: 500px;
-    }
-
-    #replyTo {
-      display: none;
-      background: rgba(0,0,0,0.6);
-      border: 1px dashed #33ff33;
-      padding: 5px 10px;
-      margin-bottom: 5px;
-      width: 90%;
-      max-width: 600px;
-      border-radius: 5px;
-      font-style: italic;
-      color: #99ff99;
     }
 
     #prompt {
@@ -105,57 +92,86 @@
     button:hover {
       background: #00cc00;
     }
+
+    #thinking {
+      display: none;
+      font-style: italic;
+      margin: 10px 0;
+    }
+
+    /* Floating chat-head */
+    #chat-head {
+      position: fixed;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      bottom: 20px;
+      right: 20px;
+      background-image: url('https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg');
+      background-size: cover;
+      cursor: pointer;
+      z-index: 9999;
+      box-shadow: 0 0 10px #33ff33;
+    }
+
+    #note-box {
+      display: none;
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.85);
+      color: #33ff33;
+      padding: 10px 15px;
+      border-radius: 10px;
+      border: 1px solid #33ff33;
+      font-size: 0.9rem;
+      z-index: 9998;
+    }
   </style>
 </head>
 <body>
   <h1>🤖 SOAD GEMINI PRO</h1>
   <div id="chat"></div>
-  <div id="replyTo"></div>
+  <p id="thinking">💬 Thinking...</p>
   <input id="prompt" placeholder="Ask something to Gemini..." />
   <button onclick="send()">Send</button>
+
+  <!-- Floating Chat Head -->
+  <div id="chat-head" draggable="true"></div>
+  <div id="note-box">
+    <strong>DEVELOPER BY SM SOAD</strong><br>
+    THIS IS A SIMPLE GEMINI PRO
+  </div>
 
   <script>
     const chatBox = document.getElementById('chat');
     const input = document.getElementById('prompt');
-    const replyToBox = document.getElementById('replyTo');
+    const thinking = document.getElementById('thinking');
 
-    let replyToText = null;
-
-    function send() {
+    async function send() {
       const question = input.value.trim();
       if (!question) return;
 
-      let content = "";
-      if (replyToText) {
-        content += `<div style="border-left: 2px solid #00ff00; padding-left: 5px; opacity: 0.7;">↪ ${replyToText}</div>`;
-      }
-      content += question;
-
-      appendMessage("You", content, "user-msg");
+      appendMessage("You", question, "user-msg");
       input.value = "";
-      replyToText = null;
-      replyToBox.innerText = "";
-      replyToBox.style.display = "none";
-
       chatBox.scrollTop = chatBox.scrollHeight;
+      thinking.style.display = "block";
 
-      // Show "thinking..." message
-      const thinkingMsg = appendMessage("SOAD GEMINI PRO", "💬 thinking...", "bot-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
-
-      fetch("/api/gemini", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: question })
-      })
-      .then(res => res.json())
-      .then(data => {
+      try {
+        const res = await fetch("/api/gemini", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: question })
+        });
+        const data = await res.json();
         const reply = data.result || data.error || "No response.";
-        thinkingMsg.querySelector(".msg-content").innerHTML = `<strong>SOAD GEMINI PRO:</strong><br>${reply}`;
+        appendMessage("SOAD GEMINI PRO", reply, "bot-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
+      } catch (err) {
+        appendMessage("SOAD GEMINI PRO", "Error: " + err.message, "bot-msg");
+      } finally {
+        thinking.style.display = "none";
         chatBox.scrollTop = chatBox.scrollHeight;
-      })
-      .catch(err => {
-        thinkingMsg.querySelector(".msg-content").innerHTML = `<strong>SOAD GEMINI PRO:</strong><br>Error: ${err.message}`;
-      });
+      }
     }
 
     function appendMessage(sender, text, className, avatar = null) {
@@ -164,25 +180,48 @@
 
       let imgHTML = "";
       if (avatar) {
-        imgHTML = `<img src="${avatar}" alt="${sender}" class="avatar">`;
+        imgHTML = `<img src="${avatar}" alt="${sender}">`;
       }
 
       msg.innerHTML = `
         ${imgHTML}
-        <div class="msg-content"><strong>${sender}:</strong><br>${text}</div>
+        <div class="msg-content">
+          <strong>${sender}:</strong><br>${text}
+        </div>
       `;
-
-      msg.addEventListener("click", () => {
-        const plainText = msg.innerText.split("\n").slice(1).join(" ");
-        replyToText = plainText.length > 100 ? plainText.substring(0, 100) + "..." : plainText;
-        replyToBox.innerText = `Replying to: "${replyToText}"`;
-        replyToBox.style.display = "block";
-        input.focus();
-      });
-
       chatBox.appendChild(msg);
-      return msg;
     }
+
+    // Floating chat-head drag and toggle note
+    const chatHead = document.getElementById('chat-head');
+    const noteBox = document.getElementById('note-box');
+    let isNoteVisible = false;
+
+    chatHead.addEventListener('click', () => {
+      isNoteVisible = !isNoteVisible;
+      noteBox.style.display = isNoteVisible ? 'block' : 'none';
+    });
+
+    let offsetX, offsetY;
+    chatHead.addEventListener('mousedown', (e) => {
+      offsetX = e.clientX - chatHead.offsetLeft;
+      offsetY = e.clientY - chatHead.offsetTop;
+
+      function moveAt(e) {
+        chatHead.style.left = `${e.clientX - offsetX}px`;
+        chatHead.style.top = `${e.clientY - offsetY}px`;
+        chatHead.style.bottom = 'auto';
+        chatHead.style.right = 'auto';
+      }
+
+      function stopDrag() {
+        document.removeEventListener('mousemove', moveAt);
+        document.removeEventListener('mouseup', stopDrag);
+      }
+
+      document.addEventListener('mousemove', moveAt);
+      document.addEventListener('mouseup', stopDrag);
+    });
   </script>
 </body>
 </html>
