@@ -1,16 +1,15 @@
-// api/song.js
-const axios = require("axios");
+// pages/api/song.js
+import axios from 'axios';
 
 export default async function handler(req, res) {
-  const q = req.method === "GET" ? req.query.q : req.body.q;
-  if (!q) return res.status(400).json({ error: "Please provide a song query" });
+  const query = req.query.q;
+  if (!query) return res.status(400).json({ error: "Missing song query" });
 
   try {
-    const response = await axios.get(`https://api.popcat.xyz/songsearch?q=${encodeURIComponent(q)}`);
-    const result = response.data.result;
-    return res.json({ result });
+    const response = await axios.get(`https://api.popcat.xyz/songsearch?q=${encodeURIComponent(query)}`);
+    res.status(200).json({ result: response.data.result });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Song search failed" });
+    console.error(err.message);
+    res.status(500).json({ error: "Failed to fetch song data" });
   }
 }
