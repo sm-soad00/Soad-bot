@@ -1,116 +1,89 @@
-<!-- index.html -->
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Soad Gemini & Song Bot</title>
+  <title>Soad Gemini Bot with Image</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
     body {
-      margin: 0;
-      padding: 0;
       font-family: 'Share Tech Mono', monospace;
       background-color: #0d0d0d;
       color: #33ff33;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      height: 100vh;
+      padding-top: 40px;
     }
-
-    h1 {
-      margin-bottom: 20px;
-    }
-
-    input, select {
+    input, button {
       background: #1a1a1a;
       color: #33ff33;
       border: 1px solid #33ff33;
       padding: 10px;
-      width: 80%;
-      max-width: 500px;
-      margin-bottom: 10px;
+      margin: 10px;
       font-size: 1rem;
     }
-
-    button {
-      background: #33ff33;
-      color: #000;
-      border: none;
-      padding: 10px 20px;
-      font-weight: bold;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-
     button:hover {
       background: #00cc00;
+      color: #000;
     }
-
+    img {
+      max-width: 300px;
+      margin-top: 10px;
+      display: none;
+      border: 2px solid #33ff33;
+    }
     pre {
       background: #1a1a1a;
       padding: 20px;
-      margin-top: 20px;
+      border: 1px solid #33ff33;
       width: 80%;
       max-width: 600px;
-      border: 1px solid #33ff33;
       overflow-x: auto;
     }
   </style>
 </head>
 <body>
-  <h1>💻 Soad Gemini + 🎵 Song Bot</h1>
-  <select id="mode">
-    <option value="gemini">Gemini</option>
-    <option value="song">Song</option>
-  </select>
-  <input id="prompt" placeholder="Enter your question or song name" />
+  <h1>🧠 Gemini Chat with Image</h1>
+  <input type="text" id="prompt" placeholder="Enter your prompt">
+  <input type="file" id="imageInput" accept="image/*">
+  <img id="preview" />
   <button onclick="send()">Send</button>
-  <pre id="response">Waiting...</pre>
+  <pre id="response">Waiting...</pre>  <script>
+    let selectedImage = null;
 
-  <script>
+    document.getElementById("imageInput").addEventListener("change", function (e) {
+      const file = e.target.files[0];
+      if (file) {
+        selectedImage = file;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const preview = document.getElementById("preview");
+          preview.src = e.target.result;
+          preview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
     async function send() {
       const prompt = document.getElementById('prompt').value;
-      const mode = document.getElementById('mode').value;
       const responseBox = document.getElementById('response');
-      responseBox.textContent = "Loading...";
+      responseBox.textContent = "Sending...";
 
-      let endpoint = "";
-      let options = {};
-
-      if (mode === "gemini") {
-        endpoint = "/api/gemini";
-        options = {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt })
-        };
-      } else {
-        endpoint = `/api/song?q=${encodeURIComponent(prompt)}`;
-        options = { method: "GET" };
-      }
+      const formData = new FormData();
+      formData.append("prompt", prompt);
+      if (selectedImage) formData.append("image", selectedImage);
 
       try {
-        const res = await fetch(endpoint, options);
+        const res = await fetch("/api/gemini", {
+          method: "POST",
+          body: formData
+        });
         const data = await res.json();
-
-        if (mode === "gemini") {
-          responseBox.textContent = data.result || data.error;
-        } else {
-          if (!data.result || data.result.length === 0) {
-            responseBox.textContent = "No songs found.";
-          } else {
-            const song = data.result[0];
-            responseBox.textContent =
-              `🎵 Title: ${song.title}\n🎤 Artist: ${song.artist}\n▶️ Link: ${song.url}`;
-          }
-        }
+        responseBox.textContent = data.result || data.error;
       } catch (err) {
         responseBox.textContent = "Error: " + err.message;
       }
     }
-  </script>
-</body>
+  </script></body>
 </html>
