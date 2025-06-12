@@ -2,53 +2,79 @@
 import { useState } from 'react';
 
 export default function Home() {
-  const [query, setQuery] = useState('');
-  const [result, setResult] = useState([]);
-  const [error, setError] = useState('');
+  const [mode, setMode] = useState('gemini');
+  const [text, setText] = useState('');
+  const [output, setOutput] = useState('');
+  const [songs, setSongs] = useState([]);
 
-  const handleSearch = async () => {
-    if (!query) return;
+  async function handleClick() {
+    if (!text) return;
+    setOutput('Loading...');
+    setSongs([]);
 
-    try {
-      const res = await fetch(`/api/song?q=${encodeURIComponent(query)}`);
-      const data = await res.json();
-      if (data.error) {
-        setError(data.error);
-        setResult([]);
-      } else {
-        setResult(data.result);
-        setError('');
+    if (mode === 'gemini') {
+      // Gemini chat
+      try {
+        const res = await fetch('/api/gemini', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: text })
+        });
+        const data = await res.json();
+        setOutput(data.result || data.error);
+      } catch {
+        setOutput('Gemini request failed.');
       }
-    } catch (err) {
-      setError('Something went wrong.');
+    } else {
+      // Song search
+      try {
+        const res = await fetch(`/api/song?q=${encodeURIComponent(text)}`);
+        const data = await res.json();
+        if (data.error) {
+          setOutput(data.error);
+        } else if (!data.result || data.result.length === 0) {
+          setOutput('No songs found.');
+        } else {
+          setOutput('');
+          setSongs(data.result);
+        }
+      } catch {
+        setOutput('Song search failed.');
+      }
     }
-  };
+  }
 
   return (
-    <div style={{ padding: 30, backgroundColor: "#000", color: "#0f0", fontFamily: "monospace", minHeight: "100vh" }}>
-      <h1>🎵 Soad Gemini + Song Bot</h1>
+    <div style={{
+      background: '#000',
+      color: '#0f0',
+      minHeight: '100vh',
+      fontFamily: 'monospace',
+      padding: 20
+    }}>
+      <h1>💻 Soad Gemini + 🎵 Song Bot</h1>
+      <select value={mode} onChange={e => setMode(e.target.value)}>
+        <option value="gemini">Gemini</option>
+        <option value="song">Song</option>
+      </select>
+      <br /><br />
       <input
-        type="text"
-        placeholder="Type a song name..."
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        style={{ padding: 10, width: "300px", fontSize: "16px" }}
+        style={{ width: 300, padding: 8, fontSize: 14 }}
+        value={text}
+        placeholder={mode === 'gemini' ? "Type your question..." : "Enter song name..."}
+        onChange={e => setText(e.target.value)}
       />
-      <button onClick={handleSearch} style={{ padding: 10, marginLeft: 10, backgroundColor: "#0f0", color: "#000" }}>
-        Search
-      </button>
+      <button onClick={handleClick} style={{ marginLeft: 10, padding: '8px 16px' }}>Send</button>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      <ul>
-        {result.map((song, index) => (
-          <li key={index} style={{ marginTop: 15 }}>
-            <strong>{song.name}</strong> by {song.artist} <br />
-            Album: {song.album}<br />
-            <audio controls src={song.preview}></audio>
-          </li>
+      <div style={{ marginTop: 20 }}>
+        {output && <pre style={{ color: '#0f0' }}>{output}</pre>}
+        {songs.length > 0 && songs.map((s, i) => (
+          <div key={i} style={{ marginBottom: 20 }}>
+            <strong>{s.title}</strong> — {s.artist}<br/>
+            <audio controls src={s.preview} style={{ marginTop: 10, width: '100%' }} />
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
-}
+          }
