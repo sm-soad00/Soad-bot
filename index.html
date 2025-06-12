@@ -1,110 +1,149 @@
-<!-- index.html -->  <!DOCTYPE html>  <html lang="en">  
-<head>  
-  <meta charset="UTF-8">  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-  <title>Soad Gemini & Song Bot</title>  
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">  
-  <style>  
-    body {  
-      margin: 0;  
-      padding: 0;  
-      font-family: 'Share Tech Mono', monospace;  
-      background-color: #0d0d0d;  
-      color: #33ff33;  
-      display: flex;  
-      flex-direction: column;  
-      align-items: center;  
-      justify-content: center;  
-      height: 100vh;  
-    }  h1 {  
-  margin-bottom: 20px;  
-}  
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SOAD GEMINI PRO</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Share Tech Mono', monospace;
+      background: url("file_00000000acb061f7a2c076e30beb896c.png") no-repeat center center fixed;
+      background-size: cover;
+      color: #33ff33;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      padding: 2rem;
+      backdrop-filter: brightness(0.8);
+    }
 
-input, select {  
-  background: #1a1a1a;  
-  color: #33ff33;  
-  border: 1px solid #33ff33;  
-  padding: 10px;  
-  width: 80%;  
-  max-width: 500px;  
-  margin-bottom: 10px;  
-  font-size: 1rem;  
-}  
+    h1 {
+      margin-bottom: 1rem;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 10px 20px;
+      border-radius: 10px;
+    }
 
-button {  
-  background: #33ff33;  
-  color: #000;  
-  border: none;  
-  padding: 10px 20px;  
-  font-weight: bold;  
-  font-size: 1rem;  
-  cursor: pointer;  
-}  
+    #chat {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid #33ff33;
+      padding: 1rem;
+      width: 90%;
+      max-width: 600px;
+      height: 60vh;
+      overflow-y: auto;
+      margin-bottom: 1rem;
+      border-radius: 10px;
+    }
 
-button:hover {  
-  background: #00cc00;  
-}  
+    .msg {
+      margin-bottom: 15px;
+      display: flex;
+      align-items: flex-start;
+    }
 
-pre {  
-  background: #1a1a1a;  
-  padding: 20px;  
-  margin-top: 20px;  
-  width: 80%;  
-  max-width: 600px;  
-  border: 1px solid #33ff33;  
-  overflow-x: auto;  
-}
+    .msg img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
 
-  </style>  
-</head>  
-<body>  
-  <h1>💻 Soad Gemini + 🎵 Song Bot</h1>  
-  <select id="mode">  
-    <option value="gemini">Gemini</option>  
-    <option value="song">Song</option>  
-  </select>  
-  <input id="prompt" placeholder="Enter your question or song name" />  
-  <button onclick="send()">Send</button>  
-  <pre id="response">Waiting...</pre>    <script>  
-    async function send() {  
-      const prompt = document.getElementById('prompt').value;  
-      const mode = document.getElementById('mode').value;  
-      const responseBox = document.getElementById('response');  
-      responseBox.textContent = "Loading...";  
-  
-      let endpoint = "";  
-      let options = {};  
-  
-      if (mode === "gemini") {  
-        endpoint = "/api/gemini";  
-        options = {  
-          method: "POST",  
-          headers: { "Content-Type": "application/json" },  
-          body: JSON.stringify({ prompt })  
-        };  
-      } else {  
-        endpoint = `/api/song?q=${encodeURIComponent(prompt)}`;  
-        options = { method: "GET" };  
-      }  
-  
-      try {  
-        const res = await fetch(endpoint, options);  
-        const data = await res.json();  
-  
-        if (mode === "gemini") {  
-          responseBox.textContent = data.result || data.error;  
-        } else {  
-          if (!data.result || data.result.length === 0) {  
-            responseBox.textContent = "No songs found.";  
-          } else {  
-            const song = data.result[0];  
-            responseBox.textContent =  
-              `🎵 Title: ${song.title}\n🎤 Artist: ${song.artist}\n▶️ Link: ${song.url}`;  
-          }  
-        }  
-      } catch (err) {  
-        responseBox.textContent = "Error: " + err.message;  
-      }  
-    }  
-  </script>  </body>  
+    .user-msg {
+      color: #33ccff;
+    }
+
+    .bot-msg {
+      color: #99ff66;
+    }
+
+    .msg-content {
+      max-width: 500px;
+    }
+
+    #prompt {
+      width: 90%;
+      max-width: 600px;
+      padding: 10px;
+      background: #1a1a1a;
+      color: #33ff33;
+      border: 1px solid #33ff33;
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+
+    button {
+      background: #33ff33;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background: #00cc00;
+    }
+  </style>
+</head>
+<body>
+  <h1>🤖 SOAD GEMINI PRO</h1>
+  <div id="chat"></div>
+  <input id="prompt" placeholder="Ask something to Gemini..." />
+  <button onclick="send()">Send</button>
+
+  <script>
+    const chatBox = document.getElementById('chat');
+    const input = document.getElementById('prompt');
+
+    async function send() {
+      const question = input.value.trim();
+      if (!question) return;
+
+      appendMessage("You", question, "user-msg");
+      input.value = "";
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        const res = await fetch("/api/gemini", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: question })
+        });
+        const data = await res.json();
+        const reply = data.result || data.error || "No response.";
+        appendMessage("SOAD GEMINI PRO", reply, "bot-msg", "SAVE_20240430_210435.jpg");
+        chatBox.scrollTop = chatBox.scrollHeight;
+      } catch (err) {
+        appendMessage("SOAD GEMINI PRO", "Error: " + err.message, "bot-msg", "SAVE_20240430_210435.jpg");
+      }
+    }
+
+    function appendMessage(sender, text, className, avatar = null) {
+      const msg = document.createElement("div");
+      msg.className = "msg " + className;
+
+      let imgHTML = "";
+      if (avatar) {
+        imgHTML = `<img src="${avatar}" alt="${sender}">`;
+      }
+
+      msg.innerHTML = `
+        ${imgHTML}
+        <div class="msg-content">
+          <strong>${sender}:</strong><br>${text}
+        </div>
+      `;
+      chatBox.appendChild(msg);
+    }
+  </script>
+</body>
 </html>
