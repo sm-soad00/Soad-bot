@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SOAD GEMINI PRO</title>
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
   <style>
     body {
       margin: 0;
@@ -92,38 +92,32 @@
       background: #00cc00;
     }
 
-    /* Floating chat-head */
-    #chat-head {
+    /* Floating chat head */
+    #chatHead {
       position: fixed;
+      bottom: 80px;
+      right: 20px;
       width: 60px;
       height: 60px;
-      border-radius: 50%;
-      top: 80px;
-      right: 20px;
       background-image: url('https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg');
       background-size: cover;
+      background-position: center;
+      border-radius: 50%;
       cursor: pointer;
-      z-index: 9999;
-      box-shadow: 0 0 10px #33ff33;
+      z-index: 999;
     }
 
-    #note-box {
-      display: none;
+    #noteBox {
       position: fixed;
-      top: 150px;
-      right: 20px;
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(0, 0, 0, 0.9);
       color: #33ff33;
       padding: 10px 15px;
-      border-radius: 10px;
       border: 1px solid #33ff33;
-      font-size: 0.9rem;
-      z-index: 9998;
-    }
-
-    .thinking-msg {
-      font-style: italic;
-      color: #999;
+      border-radius: 10px;
+      z-index: 998;
+      display: none;
+      max-width: 200px;
+      white-space: pre-wrap;
     }
   </style>
 </head>
@@ -134,19 +128,15 @@
   <button onclick="send()">Send</button>
 
   <!-- Floating Chat Head -->
-  <div id="chat-head" draggable="true"></div>
-  <div id="note-box">
-    <strong>DEVELOPER BY SM SOAD</strong><br>
-    THIS IS A SIMPLE GEMINI PRO
-  </div>
+  <div id="chatHead" title="Click me!"></div>
+  <div id="noteBox">DEVELOPER BY SM SOAD.\nTHIS IS A SIMPLE GEMINI PRO</div>
 
   <script>
     const chatBox = document.getElementById('chat');
     const input = document.getElementById('prompt');
-    const chatHead = document.getElementById('chat-head');
-    const noteBox = document.getElementById('note-box');
-
-    let thinkingEl = null;
+    const chatHead = document.getElementById('chatHead');
+    const noteBox = document.getElementById('noteBox');
+    let isNoteVisible = false;
 
     async function send() {
       const question = input.value.trim();
@@ -154,13 +144,9 @@
 
       appendMessage("You", question, "user-msg");
       input.value = "";
-      chatBox.scrollTop = chatBox.scrollHeight;
 
-      // Add "Thinking..." inside chat
-      thinkingEl = document.createElement("div");
-      thinkingEl.className = "msg bot-msg";
-      thinkingEl.innerHTML = `<div class="msg-content"><em>💬 Thinking...</em></div>`;
-      chatBox.appendChild(thinkingEl);
+      appendMessage("SOAD GEMINI PRO", "Thinking 💬", "bot-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
+
       chatBox.scrollTop = chatBox.scrollHeight;
 
       try {
@@ -172,12 +158,12 @@
         const data = await res.json();
         const reply = data.result || data.error || "No response.";
 
-        // Remove thinking
-        thinkingEl.remove();
-
+        removeThinking(); // remove previous "thinking"
         appendMessage("SOAD GEMINI PRO", reply, "bot-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
+
+        chatBox.scrollTop = chatBox.scrollHeight;
       } catch (err) {
-        thinkingEl.remove();
+        removeThinking();
         appendMessage("SOAD GEMINI PRO", "Error: " + err.message, "bot-msg");
       }
     }
@@ -186,10 +172,7 @@
       const msg = document.createElement("div");
       msg.className = "msg " + className;
 
-      let imgHTML = "";
-      if (avatar) {
-        imgHTML = `<img src="${avatar}" alt="${sender}">`;
-      }
+      let imgHTML = avatar ? `<img src="${avatar}" alt="${sender}">` : "";
 
       msg.innerHTML = `
         ${imgHTML}
@@ -197,72 +180,46 @@
           <strong>${sender}:</strong><br>${text}
         </div>
       `;
+      msg.dataset.isThinking = text === "Thinking 💬" ? "true" : "false";
       chatBox.appendChild(msg);
     }
 
-    // Chat-head toggle
-    let isNoteVisible = false;
+    function removeThinking() {
+      const msgs = chatBox.querySelectorAll('.msg');
+      msgs.forEach(msg => {
+        if (msg.dataset.isThinking === "true") {
+          chatBox.removeChild(msg);
+        }
+      });
+    }
+
+    // Drag & show note
+    let offsetX, offsetY;
+    chatHead.addEventListener('mousedown', e => {
+      offsetX = e.offsetX;
+      offsetY = e.offsetY;
+
+      function onMouseMove(e) {
+        chatHead.style.left = `${e.clientX - offsetX}px`;
+        chatHead.style.top = `${e.clientY - offsetY}px`;
+      }
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', () => {
+        document.removeEventListener('mousemove', onMouseMove);
+      }, { once: true });
+    });
+
     chatHead.addEventListener('click', () => {
       isNoteVisible = !isNoteVisible;
-      noteBox.style.display = isNoteVisible ? 'block' : 'none';
-    });
-
-    // Drag functionality (desktop + mobile)
-    let offsetX, offsetY;
-    chatHead.addEventListener('mousedown', (e) => {
-      offsetX = e.clientX - chatHead.offsetLeft;
-      offsetY = e.clientY - chatHead.offsetTop;
-
-      function moveAt(e) {
-        let left = e.clientX - offsetX;
-        let top = e.clientY - offsetY;
-
-        // Keep inside viewport
-        left = Math.max(0, Math.min(window.innerWidth - 60, left));
-        top = Math.max(0, Math.min(window.innerHeight - 60, top));
-
-        chatHead.style.left = left + "px";
-        chatHead.style.top = top + "px";
-        chatHead.style.right = "auto";
-        chatHead.style.bottom = "auto";
+      if (isNoteVisible) {
+        const rect = chatHead.getBoundingClientRect();
+        noteBox.style.left = rect.left + 70 + 'px';
+        noteBox.style.top = rect.top + 'px';
+        noteBox.style.display = 'block';
+      } else {
+        noteBox.style.display = 'none';
       }
-
-      function stopDrag() {
-        document.removeEventListener('mousemove', moveAt);
-        document.removeEventListener('mouseup', stopDrag);
-      }
-
-      document.addEventListener('mousemove', moveAt);
-      document.addEventListener('mouseup', stopDrag);
-    });
-
-    // Touch support
-    chatHead.addEventListener('touchstart', function(e) {
-      const touch = e.touches[0];
-      offsetX = touch.clientX - chatHead.offsetLeft;
-      offsetY = touch.clientY - chatHead.offsetTop;
-
-      function moveAt(e) {
-        const touch = e.touches[0];
-        let left = touch.clientX - offsetX;
-        let top = touch.clientY - offsetY;
-
-        left = Math.max(0, Math.min(window.innerWidth - 60, left));
-        top = Math.max(0, Math.min(window.innerHeight - 60, top));
-
-        chatHead.style.left = left + "px";
-        chatHead.style.top = top + "px";
-        chatHead.style.right = "auto";
-        chatHead.style.bottom = "auto";
-      }
-
-      function stopDrag() {
-        document.removeEventListener('touchmove', moveAt);
-        document.removeEventListener('touchend', stopDrag);
-      }
-
-      document.addEventListener('touchmove', moveAt);
-      document.addEventListener('touchend', stopDrag);
     });
   </script>
 </body>
