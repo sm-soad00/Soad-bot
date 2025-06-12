@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,7 +47,7 @@
       align-items: flex-start;
     }
 
-    .msg img {
+    .msg img.avatar {
       width: 32px;
       height: 32px;
       border-radius: 50%;
@@ -65,10 +64,9 @@
 
     .msg-content {
       max-width: 500px;
-      word-wrap: break-word;
     }
 
-    #prompt {
+    #prompt, #imageInput {
       width: 90%;
       max-width: 600px;
       padding: 10px;
@@ -76,12 +74,6 @@
       color: #33ff33;
       border: 1px solid #33ff33;
       font-size: 1rem;
-      margin-bottom: 10px;
-    }
-
-    .controls {
-      display: flex;
-      gap: 10px;
       margin-bottom: 10px;
     }
 
@@ -100,61 +92,81 @@
       background: #00cc00;
     }
 
-    #imageInput {
-      display: none;
-    }
-
-    .image-btn {
-      background: #333;
-      color: #33ff33;
-      border: 1px solid #33ff33;
-      padding: 10px;
-      font-size: 1rem;
-      cursor: pointer;
+    #preview {
+      max-width: 200px;
+      margin-bottom: 10px;
       border-radius: 5px;
-    }
-
-    .image-btn:hover {
-      background: #222;
+      border: 1px solid #33ff33;
+      display: none;
     }
   </style>
 </head>
 <body>
   <h1>🤖 SOAD GEMINI PRO</h1>
   <div id="chat"></div>
-
-  <div class="controls">
-    <input id="prompt" placeholder="Ask something to Gemini..." />
-    <button onclick="send()">Send</button>
-    <label for="imageInput" class="image-btn">📷</label>
-    <input type="file" id="imageInput" accept="image/*" />
-  </div>
+  <input id="prompt" placeholder="Ask something to Gemini..." />
+  <input type="file" id="imageInput" accept="image/*" />
+  <img id="preview" />
+  <button onclick="send()">Send</button>
 
   <script>
     const chatBox = document.getElementById('chat');
     const input = document.getElementById('prompt');
     const imageInput = document.getElementById('imageInput');
+    const preview = document.getElementById('preview');
+
+    let selectedImage = null;
+
+    imageInput.addEventListener('change', () => {
+      const file = imageInput.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          selectedImage = reader.result;
+          preview.src = selectedImage;
+          preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
 
     async function send() {
       const question = input.value.trim();
-      if (!question) return;
+      const hasText = question.length > 0;
+      const hasImage = selectedImage !== null;
 
-      appendMessage("You", question, "user-msg");
+      if (!hasText && !hasImage) return;
+
+      // Append user message
+      let content = "";
+      if (hasText) content += question;
+      if (hasImage) content += `<br><img src="${selectedImage}" style="max-width: 200px; border: 1px solid #33ff33; border-radius: 5px;" />`;
+
+      appendMessage("You", content, "user-msg");
+
+      // Reset input
       input.value = "";
+      selectedImage = null;
+      preview.src = "";
+      preview.style.display = "none";
+      imageInput.value = "";
+
       chatBox.scrollTop = chatBox.scrollHeight;
 
-      try {
-        const res = await fetch("/api/gemini", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: question })
-        });
-        const data = await res.json();
-        const reply = data.result || data.error || "No response.";
-        appendMessage("SOAD GEMINI PRO", reply, "bot-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
-        chatBox.scrollTop = chatBox.scrollHeight;
-      } catch (err) {
-        appendMessage("SOAD GEMINI PRO", "Error: " + err.message, "bot-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
+      if (hasText) {
+        try {
+          const res = await fetch("/api/gemini", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: question })
+          });
+          const data = await res.json();
+          const reply = data.result || data.error || "No response.";
+          appendMessage("SOAD GEMINI PRO", reply, "bot-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
+          chatBox.scrollTop = chatBox.scrollHeight;
+        } catch (err) {
+          appendMessage("SOAD GEMINI PRO", "Error: " + err.message, "bot-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
+        }
       }
     }
 
@@ -164,7 +176,7 @@
 
       let imgHTML = "";
       if (avatar) {
-        imgHTML = `<img src="${avatar}" alt="${sender}">`;
+        imgHTML = `<img src="${avatar}" alt="${sender}" class="avatar">`;
       }
 
       msg.innerHTML = `
@@ -175,19 +187,6 @@
       `;
       chatBox.appendChild(msg);
     }
-
-    imageInput.addEventListener('change', () => {
-      const file = imageInput.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const imgHTML = `<img src="${e.target.result}" style="max-width: 200px; border: 1px solid #33ff33; border-radius: 5px;" />`;
-        appendMessage("You", imgHTML, "user-msg");
-        chatBox.scrollTop = chatBox.scrollHeight;
-      };
-      reader.readAsDataURL(file);
-    });
   </script>
 </body>
 </html>
