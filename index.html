@@ -1,109 +1,59 @@
-<!-- index.html --><!DOCTYPE html><html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Soad Gemini & Song Bot</title>
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Soad Gemini + 🎵 Song Bot</title>
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Share Tech Mono', monospace;
-      background-color: #0d0d0d;
-      color: #33ff33;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }h1 {
-  margin-bottom: 20px;
-}
-
-input, select {
-  background: #1a1a1a;
-  color: #33ff33;
-  border: 1px solid #33ff33;
-  padding: 10px;
-  width: 80%;
-  max-width: 500px;
-  margin-bottom: 10px;
-  font-size: 1rem;
-}
-
-button {
-  background: #33ff33;
-  color: #000;
-  border: none;
-  padding: 10px 20px;
-  font-weight: bold;
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #00cc00;
-}
-
-pre {
-  background: #1a1a1a;
-  padding: 20px;
-  margin-top: 20px;
-  width: 80%;
-  max-width: 600px;
-  border: 1px solid #33ff33;
-  overflow-x: auto;
-}
-
+      background-color: #000;
+      color: #0f0;
+      font-family: monospace;
+      text-align: center;
+      padding-top: 50px;
+    }
+    input, select, button {
+      padding: 10px;
+      margin: 10px;
+      background-color: black;
+      border: 1px solid #0f0;
+      color: #0f0;
+      font-family: monospace;
+    }
+    #result {
+      margin-top: 20px;
+      border: 1px solid #0f0;
+      padding: 10px;
+      white-space: pre-wrap;
+    }
+    audio {
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
   <h1>💻 Soad Gemini + 🎵 Song Bot</h1>
-  <select id="mode">
-    <option value="gemini">Gemini</option>
+  <select id="command">
     <option value="song">Song</option>
   </select>
-  <input id="prompt" placeholder="Enter your question or song name" />
-  <button onclick="send()">Send</button>
-  <pre id="response">Waiting...</pre>  <script>
-    async function send() {
-      const prompt = document.getElementById('prompt').value;
-      const mode = document.getElementById('mode').value;
-      const responseBox = document.getElementById('response');
-      responseBox.textContent = "Loading...";
-
-      let endpoint = "";
-      let options = {};
-
-      if (mode === "gemini") {
-        endpoint = "/api/gemini";
-        options = {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt })
-        };
-      } else {
-        endpoint = `/api/song?q=${encodeURIComponent(prompt)}`;
-        options = { method: "GET" };
-      }
-
+  <br />
+  <input id="text" type="text" placeholder="Enter song name...">
+  <br />
+  <button onclick="sendCommand()">Send</button>
+  <div id="result"></div>  <script>
+    async function sendCommand() {
+      const text = document.getElementById("text").value;
+      const result = document.getElementById("result");
+      result.innerText = "Loading...";
       try {
-        const res = await fetch(endpoint, options);
-        const data = await res.json();
-
-        if (mode === "gemini") {
-          responseBox.textContent = data.result || data.error;
-        } else {
-          if (!data.result || data.result.length === 0) {
-            responseBox.textContent = "No songs found.";
-          } else {
-            const song = data.result[0];
-            responseBox.textContent =
-              `🎵 Title: ${song.title}\n🎤 Artist: ${song.artist}\n▶️ Link: ${song.url}`;
-          }
+        const res = await fetch(`https://api.popcat.xyz/music?q=${encodeURIComponent(text)}`);
+        const json = await res.json();
+        if (!json.title) {
+          result.innerText = "❌ গান খুঁজে পাওয়া যায়নি!";
+          return;
         }
-      } catch (err) {
-        responseBox.textContent = "Error: " + err.message;
+        result.innerHTML = `🎵 Title: ${json.title}<br>👤 Artist: ${json.artist}<br>💿 Album: ${json.album}<br><audio controls src="${json.preview}"></audio>`;
+      } catch (e) {
+        result.innerText = "❌ Error fetching song info!";
       }
     }
   </script></body>
