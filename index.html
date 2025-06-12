@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -40,33 +39,36 @@
     }
 
     .msg {
-      margin-bottom: 15px;
       display: flex;
-      align-items: flex-start;
-    }
-
-    .msg img {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      margin-right: 10px;
+      margin-bottom: 10px;
     }
 
     .user-msg {
-      color: #33ccff;
       justify-content: flex-end;
-      flex-direction: row-reverse;
     }
 
     .bot-msg {
-      color: #99ff66;
+      justify-content: flex-start;
     }
 
     .msg-content {
-      max-width: 500px;
-      background: rgba(26, 26, 26, 0.7);
-      padding: 8px;
-      border-radius: 6px;
+      background: rgba(26, 26, 26, 0.8);
+      padding: 8px 12px;
+      border-radius: 10px;
+      max-width: 60%;
+      color: #fff;
+    }
+
+    .user-msg .msg-content {
+      background: #007aff;
+      color: white;
+      border-top-right-radius: 0;
+    }
+
+    .bot-msg .msg-content {
+      background: #1a1a1a;
+      color: #33ff33;
+      border-top-left-radius: 0;
     }
 
     #prompt {
@@ -164,7 +166,7 @@
       const question = input.value.trim();
       if (!question) return;
 
-      appendMessage("You", question, "user-msg");
+      appendMessage(question, "user-msg");
       input.value = "";
 
       thinking.style.display = "block";
@@ -178,21 +180,19 @@
         });
         const data = await res.json();
         const reply = data.result || data.error || "No response.";
-        appendMessage("SOAD GEMINI PRO", reply, "bot-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
+        appendMessage(reply, "bot-msg");
       } catch (err) {
-        appendMessage("SOAD GEMINI PRO", "Error: " + err.message, "bot-msg");
+        appendMessage("Error: " + err.message, "bot-msg");
       } finally {
         thinking.style.display = "none";
         chatBox.scrollTop = chatBox.scrollHeight;
       }
     }
 
-    function appendMessage(sender, text, className, avatar = null) {
+    function appendMessage(text, className) {
       const msg = document.createElement("div");
       msg.className = "msg " + className;
-
-      let imgHTML = avatar ? `<img src="${avatar}" alt="${sender}">` : "";
-      msg.innerHTML = `${imgHTML}<div class="msg-content"><strong>${sender}:</strong><br>${text}</div>`;
+      msg.innerHTML = `<div class="msg-content">${text}</div>`;
       chatBox.appendChild(msg);
     }
 
@@ -201,7 +201,6 @@
       note.style.display = note.style.display === 'none' ? 'block' : 'none';
     }
 
-    // Drag chat head
     const chatHead = document.getElementById('chat-head');
     let isDragging = false;
 
@@ -215,7 +214,6 @@
           chatHead.style.left = `${e.clientX - offsetX}px`;
           chatHead.style.top = `${e.clientY - offsetY}px`;
 
-          // move note with it
           const note = document.getElementById('note');
           note.style.left = `${e.clientX - offsetX + 70}px`;
           note.style.top = `${e.clientY - offsetY}px`;
