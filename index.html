@@ -1,10 +1,11 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SOAD GEMINI PRO</title>
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <style>
     body {
       margin: 0;
@@ -13,23 +14,21 @@
       background: url("https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/file_00000000acb061f7a2c076e30beb896c.png") no-repeat center center fixed;
       background-size: cover;
       color: #33ff33;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      height: 100vh;
-      padding: 2rem;
-      backdrop-filter: brightness(0.8);
+      overflow: hidden;
     }
 
     h1 {
-      margin-bottom: 1rem;
+      text-align: center;
+      padding: 1rem;
       background: rgba(0, 0, 0, 0.6);
-      padding: 10px 20px;
-      border-radius: 10px;
+      margin: 0;
     }
 
     #chat {
+      position: absolute;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
       background: rgba(0, 0, 0, 0.6);
       border: 1px solid #33ff33;
       padding: 1rem;
@@ -37,7 +36,6 @@
       max-width: 600px;
       height: 60vh;
       overflow-y: auto;
-      margin-bottom: 1rem;
       border-radius: 10px;
     }
 
@@ -56,6 +54,8 @@
 
     .user-msg {
       color: #33ccff;
+      justify-content: flex-end;
+      flex-direction: row-reverse;
     }
 
     .bot-msg {
@@ -64,20 +64,28 @@
 
     .msg-content {
       max-width: 500px;
+      background: rgba(26, 26, 26, 0.7);
+      padding: 8px;
+      border-radius: 6px;
     }
 
     #prompt {
-      width: 90%;
-      max-width: 600px;
+      position: absolute;
+      right: 10px;
+      bottom: 20px;
+      width: 70%;
+      max-width: 400px;
       padding: 10px;
       background: #1a1a1a;
       color: #33ff33;
       border: 1px solid #33ff33;
       font-size: 1rem;
-      margin-bottom: 10px;
     }
 
     button {
+      position: absolute;
+      right: 10px;
+      bottom: 70px;
       background: #33ff33;
       color: #000;
       border: none;
@@ -92,32 +100,46 @@
       background: #00cc00;
     }
 
-    /* Floating chat head */
-    #chatHead {
+    #chat-head {
       position: fixed;
-      bottom: 80px;
-      right: 20px;
+      bottom: 30px;
+      left: 30px;
       width: 60px;
       height: 60px;
-      background-image: url('https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg');
-      background-size: cover;
-      background-position: center;
       border-radius: 50%;
-      cursor: pointer;
-      z-index: 999;
+      background: url('https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg') no-repeat center/cover;
+      cursor: move;
+      z-index: 1000;
     }
 
-    #noteBox {
+    #note {
       position: fixed;
-      background: rgba(0, 0, 0, 0.9);
+      bottom: 100px;
+      left: 100px;
+      background: rgba(0, 0, 0, 0.8);
       color: #33ff33;
-      padding: 10px 15px;
-      border: 1px solid #33ff33;
+      padding: 15px;
       border-radius: 10px;
-      z-index: 998;
       display: none;
-      max-width: 200px;
-      white-space: pre-wrap;
+      border: 1px solid #33ff33;
+      width: 220px;
+    }
+
+    #note h4 {
+      margin-top: 0;
+      margin-bottom: 5px;
+    }
+
+    #thinking {
+      position: absolute;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      padding: 5px 15px;
+      border-radius: 10px;
+      border: 1px solid #33ff33;
+      display: none;
     }
   </style>
 </head>
@@ -126,17 +148,17 @@
   <div id="chat"></div>
   <input id="prompt" placeholder="Ask something to Gemini..." />
   <button onclick="send()">Send</button>
-
-  <!-- Floating Chat Head -->
-  <div id="chatHead" title="Click me!"></div>
-  <div id="noteBox">DEVELOPER BY SM SOAD.\nTHIS IS A SIMPLE GEMINI PRO</div>
+  <div id="chat-head" onclick="toggleNote()"></div>
+  <div id="note">
+    <h4>🛠 DEVELOPER BY SM SOAD</h4>
+    <p>THIS IS A SIMPLE GEMINI PRO</p>
+  </div>
+  <div id="thinking">Thinking 💬</div>
 
   <script>
     const chatBox = document.getElementById('chat');
     const input = document.getElementById('prompt');
-    const chatHead = document.getElementById('chatHead');
-    const noteBox = document.getElementById('noteBox');
-    let isNoteVisible = false;
+    const thinking = document.getElementById('thinking');
 
     async function send() {
       const question = input.value.trim();
@@ -145,8 +167,7 @@
       appendMessage("You", question, "user-msg");
       input.value = "";
 
-      appendMessage("SOAD GEMINI PRO", "Thinking 💬", "bot-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
-
+      thinking.style.display = "block";
       chatBox.scrollTop = chatBox.scrollHeight;
 
       try {
@@ -157,14 +178,12 @@
         });
         const data = await res.json();
         const reply = data.result || data.error || "No response.";
-
-        removeThinking(); // remove previous "thinking"
         appendMessage("SOAD GEMINI PRO", reply, "bot-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
-
-        chatBox.scrollTop = chatBox.scrollHeight;
       } catch (err) {
-        removeThinking();
         appendMessage("SOAD GEMINI PRO", "Error: " + err.message, "bot-msg");
+      } finally {
+        thinking.style.display = "none";
+        chatBox.scrollTop = chatBox.scrollHeight;
       }
     }
 
@@ -173,53 +192,44 @@
       msg.className = "msg " + className;
 
       let imgHTML = avatar ? `<img src="${avatar}" alt="${sender}">` : "";
-
-      msg.innerHTML = `
-        ${imgHTML}
-        <div class="msg-content">
-          <strong>${sender}:</strong><br>${text}
-        </div>
-      `;
-      msg.dataset.isThinking = text === "Thinking 💬" ? "true" : "false";
+      msg.innerHTML = `${imgHTML}<div class="msg-content"><strong>${sender}:</strong><br>${text}</div>`;
       chatBox.appendChild(msg);
     }
 
-    function removeThinking() {
-      const msgs = chatBox.querySelectorAll('.msg');
-      msgs.forEach(msg => {
-        if (msg.dataset.isThinking === "true") {
-          chatBox.removeChild(msg);
-        }
-      });
+    function toggleNote() {
+      const note = document.getElementById('note');
+      note.style.display = note.style.display === 'none' ? 'block' : 'none';
     }
 
-    // Drag & show note
-    let offsetX, offsetY;
-    chatHead.addEventListener('mousedown', e => {
-      offsetX = e.offsetX;
-      offsetY = e.offsetY;
+    // Drag chat head
+    const chatHead = document.getElementById('chat-head');
+    let isDragging = false;
 
-      function onMouseMove(e) {
-        chatHead.style.left = `${e.clientX - offsetX}px`;
-        chatHead.style.top = `${e.clientY - offsetY}px`;
+    chatHead.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      let offsetX = e.clientX - chatHead.offsetLeft;
+      let offsetY = e.clientY - chatHead.offsetTop;
+
+      function move(e) {
+        if (isDragging) {
+          chatHead.style.left = `${e.clientX - offsetX}px`;
+          chatHead.style.top = `${e.clientY - offsetY}px`;
+
+          // move note with it
+          const note = document.getElementById('note');
+          note.style.left = `${e.clientX - offsetX + 70}px`;
+          note.style.top = `${e.clientY - offsetY}px`;
+        }
       }
 
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', () => {
-        document.removeEventListener('mousemove', onMouseMove);
-      }, { once: true });
-    });
-
-    chatHead.addEventListener('click', () => {
-      isNoteVisible = !isNoteVisible;
-      if (isNoteVisible) {
-        const rect = chatHead.getBoundingClientRect();
-        noteBox.style.left = rect.left + 70 + 'px';
-        noteBox.style.top = rect.top + 'px';
-        noteBox.style.display = 'block';
-      } else {
-        noteBox.style.display = 'none';
+      function stop() {
+        isDragging = false;
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', stop);
       }
+
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', stop);
     });
   </script>
 </body>
