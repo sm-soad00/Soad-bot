@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -93,19 +92,13 @@
       background: #00cc00;
     }
 
-    #thinking {
-      display: none;
-      font-style: italic;
-      margin: 10px 0;
-    }
-
     /* Floating chat-head */
     #chat-head {
       position: fixed;
       width: 60px;
       height: 60px;
       border-radius: 50%;
-      bottom: 20px;
+      top: 80px;
       right: 20px;
       background-image: url('https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg');
       background-size: cover;
@@ -117,7 +110,7 @@
     #note-box {
       display: none;
       position: fixed;
-      bottom: 90px;
+      top: 150px;
       right: 20px;
       background: rgba(0, 0, 0, 0.85);
       color: #33ff33;
@@ -127,12 +120,16 @@
       font-size: 0.9rem;
       z-index: 9998;
     }
+
+    .thinking-msg {
+      font-style: italic;
+      color: #999;
+    }
   </style>
 </head>
 <body>
   <h1>🤖 SOAD GEMINI PRO</h1>
   <div id="chat"></div>
-  <p id="thinking">💬 Thinking...</p>
   <input id="prompt" placeholder="Ask something to Gemini..." />
   <button onclick="send()">Send</button>
 
@@ -146,7 +143,10 @@
   <script>
     const chatBox = document.getElementById('chat');
     const input = document.getElementById('prompt');
-    const thinking = document.getElementById('thinking');
+    const chatHead = document.getElementById('chat-head');
+    const noteBox = document.getElementById('note-box');
+
+    let thinkingEl = null;
 
     async function send() {
       const question = input.value.trim();
@@ -155,7 +155,13 @@
       appendMessage("You", question, "user-msg");
       input.value = "";
       chatBox.scrollTop = chatBox.scrollHeight;
-      thinking.style.display = "block";
+
+      // Add "Thinking..." inside chat
+      thinkingEl = document.createElement("div");
+      thinkingEl.className = "msg bot-msg";
+      thinkingEl.innerHTML = `<div class="msg-content"><em>💬 Thinking...</em></div>`;
+      chatBox.appendChild(thinkingEl);
+      chatBox.scrollTop = chatBox.scrollHeight;
 
       try {
         const res = await fetch("/api/gemini", {
@@ -165,12 +171,14 @@
         });
         const data = await res.json();
         const reply = data.result || data.error || "No response.";
+
+        // Remove thinking
+        thinkingEl.remove();
+
         appendMessage("SOAD GEMINI PRO", reply, "bot-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
       } catch (err) {
+        thinkingEl.remove();
         appendMessage("SOAD GEMINI PRO", "Error: " + err.message, "bot-msg");
-      } finally {
-        thinking.style.display = "none";
-        chatBox.scrollTop = chatBox.scrollHeight;
       }
     }
 
@@ -192,26 +200,31 @@
       chatBox.appendChild(msg);
     }
 
-    // Floating chat-head drag and toggle note
-    const chatHead = document.getElementById('chat-head');
-    const noteBox = document.getElementById('note-box');
+    // Chat-head toggle
     let isNoteVisible = false;
-
     chatHead.addEventListener('click', () => {
       isNoteVisible = !isNoteVisible;
       noteBox.style.display = isNoteVisible ? 'block' : 'none';
     });
 
+    // Drag functionality (desktop + mobile)
     let offsetX, offsetY;
     chatHead.addEventListener('mousedown', (e) => {
       offsetX = e.clientX - chatHead.offsetLeft;
       offsetY = e.clientY - chatHead.offsetTop;
 
       function moveAt(e) {
-        chatHead.style.left = `${e.clientX - offsetX}px`;
-        chatHead.style.top = `${e.clientY - offsetY}px`;
-        chatHead.style.bottom = 'auto';
-        chatHead.style.right = 'auto';
+        let left = e.clientX - offsetX;
+        let top = e.clientY - offsetY;
+
+        // Keep inside viewport
+        left = Math.max(0, Math.min(window.innerWidth - 60, left));
+        top = Math.max(0, Math.min(window.innerHeight - 60, top));
+
+        chatHead.style.left = left + "px";
+        chatHead.style.top = top + "px";
+        chatHead.style.right = "auto";
+        chatHead.style.bottom = "auto";
       }
 
       function stopDrag() {
@@ -221,6 +234,35 @@
 
       document.addEventListener('mousemove', moveAt);
       document.addEventListener('mouseup', stopDrag);
+    });
+
+    // Touch support
+    chatHead.addEventListener('touchstart', function(e) {
+      const touch = e.touches[0];
+      offsetX = touch.clientX - chatHead.offsetLeft;
+      offsetY = touch.clientY - chatHead.offsetTop;
+
+      function moveAt(e) {
+        const touch = e.touches[0];
+        let left = touch.clientX - offsetX;
+        let top = touch.clientY - offsetY;
+
+        left = Math.max(0, Math.min(window.innerWidth - 60, left));
+        top = Math.max(0, Math.min(window.innerHeight - 60, top));
+
+        chatHead.style.left = left + "px";
+        chatHead.style.top = top + "px";
+        chatHead.style.right = "auto";
+        chatHead.style.bottom = "auto";
+      }
+
+      function stopDrag() {
+        document.removeEventListener('touchmove', moveAt);
+        document.removeEventListener('touchend', stopDrag);
+      }
+
+      document.addEventListener('touchmove', moveAt);
+      document.addEventListener('touchend', stopDrag);
     });
   </script>
 </body>
