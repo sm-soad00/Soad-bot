@@ -120,7 +120,7 @@
         });
         const data = await res.json();
         const reply = data.result || data.error || "No response.";
-        appendMessage("SOAD GEMINI PRO", reply, "bot-msg", "SAVE_20240430_210435.jpg");
+        appendMessage("SOAD GEMINI PRO", reply, "bot-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
         chatBox.scrollTop = chatBox.scrollHeight;
       } catch (err) {
         appendMessage("SOAD GEMINI PRO", "Error: " + err.message, "bot-msg", "SAVE_20240430_210435.jpg");
