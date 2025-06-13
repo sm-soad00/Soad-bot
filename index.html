@@ -56,10 +56,14 @@
 
     .user-msg {
       color: #33ccff;
+      justify-content: flex-end;
+      text-align: right;
     }
 
     .bot-msg {
       color: #99ff66;
+      justify-content: flex-start;
+      text-align: left;
     }
 
     .msg-content {
@@ -120,8 +124,6 @@
     #noteBox {
       display: none;
       position: fixed;
-      bottom: 90px;
-      right: 20px;
       background: rgba(0,0,0,0.85);
       color: #33ff33;
       padding: 12px 16px;
@@ -133,7 +135,7 @@
   </style>
 </head>
 <body>
-  <h1>🌍SOAD GEMINI PRO🌍</h1>
+  <h1>🌍SOAD GEMINI PRO</h1>
   <div id="chat"></div>
   <div id="thinking">💬 Thinking...</div>
   <input id="prompt" placeholder="Ask something to Gemini..." />
@@ -150,7 +152,6 @@
   <script>
     const chatBox = document.getElementById('chat');
     const input = document.getElementById('prompt');
-    const thinking = document.getElementById('thinking');
 
     async function send() {
       const question = input.value.trim();
@@ -160,7 +161,8 @@
       input.value = "";
       chatBox.scrollTop = chatBox.scrollHeight;
 
-      thinking.style.display = "block";
+      // Show "Thinking..." as bot message
+      appendMessage("SOAD GEMINI PRO", "💬 Thinking...", "bot-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
 
       try {
         const res = await fetch("/api/gemini", {
@@ -169,12 +171,20 @@
           body: JSON.stringify({ prompt: question })
         });
         const data = await res.json();
-        thinking.style.display = "none";
+
+        // Remove last thinking message
+        const allMsgs = document.querySelectorAll(".bot-msg");
+        const lastMsg = allMsgs[allMsgs.length - 1];
+        if (lastMsg?.innerText.includes("💬 Thinking")) lastMsg.remove();
+
         const reply = data.result || data.error || "No response.";
         appendMessage("SOAD GEMINI PRO", reply, "bot-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
         chatBox.scrollTop = chatBox.scrollHeight;
       } catch (err) {
-        thinking.style.display = "none";
+        const allMsgs = document.querySelectorAll(".bot-msg");
+        const lastMsg = allMsgs[allMsgs.length - 1];
+        if (lastMsg?.innerText.includes("💬 Thinking")) lastMsg.remove();
+
         appendMessage("SOAD GEMINI PRO", "Error: " + err.message, "bot-msg", "https://raw.githubusercontent.com/sm-soad00/Soad-bot/main/SAVE_20240430_210435.jpg");
       }
     }
@@ -197,7 +207,7 @@
       chatBox.appendChild(msg);
     }
 
-    // Chat head drag + toggle
+    // Chat Head draggable + Note toggle
     const chatHead = document.getElementById('chatHead');
     const noteBox = document.getElementById('noteBox');
     let isDragging = false, offsetX = 0, offsetY = 0;
@@ -210,14 +220,14 @@
 
     document.addEventListener('mousemove', e => {
       if (isDragging) {
-        chatHead.style.left = `${e.clientX - offsetX}px`;
-        chatHead.style.top = `${e.clientY - offsetY}px`;
-        chatHead.style.bottom = "auto";
+        const left = e.clientX - offsetX;
+        const top = e.clientY - offsetY;
+        chatHead.style.left = `${left}px`;
+        chatHead.style.top = `${top}px`;
         chatHead.style.right = "auto";
-        noteBox.style.bottom = "auto";
-        noteBox.style.right = "auto";
-        noteBox.style.top = `${e.clientY - offsetY - 70}px`;
-        noteBox.style.left = `${e.clientX - offsetX}px`;
+        chatHead.style.bottom = "auto";
+        noteBox.style.left = `${left}px`;
+        noteBox.style.top = `${top - 70}px`;
       }
     });
 
@@ -230,4 +240,4 @@
     });
   </script>
 </body>
-</html>
+  </html>
